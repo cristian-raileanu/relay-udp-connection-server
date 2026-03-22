@@ -1,0 +1,1 @@
+java -cp target/ Main localhost 34002 34001 localhost 4
