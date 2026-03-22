@@ -95,7 +95,7 @@ public class DummyClient {
     }
 
     private InetAddress retrieveRealIp(InetAddress serverAddress, int serverPort) throws IOException {
-        sendMessage("IP", serverAddress, serverPort);
+        sendMessage("IP ", serverAddress, serverPort);
         String message = receiveMessage();
         String address = getSecondWord(message);
         return InetAddress.getByName(address);

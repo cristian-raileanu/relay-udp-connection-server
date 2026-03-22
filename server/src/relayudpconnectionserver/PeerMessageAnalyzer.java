@@ -45,7 +45,8 @@ public class PeerMessageAnalyzer extends Thread {
             if (firstWord.equals("PING")) {
                 forwardPacketToClient(packet, clientAddress, clientPort);
             } else if (firstWord.equals("IP")) {
-                packet.setData(("IP" + packet.getAddress().getHostAddress()).getBytes(StandardCharsets.UTF_8));
+                String senderAddress = clientAddress.getHostAddress();
+                packet.setData(("IP " + senderAddress).getBytes(StandardCharsets.UTF_8));
                 forwardPacketToClient(packet, clientAddress, clientPort);
             }else {
                 InetAddress destination = InetAddress.getByName(firstWord);
@@ -57,7 +58,7 @@ public class PeerMessageAnalyzer extends Thread {
     }
 
     private void forwardPacketToClient(final DatagramPacket packet, InetAddress address, int port) {
-        Logger.info("[PeerMessageAnalyzer] forwardPacketToClient");
+        Logger.info("[PeerMessageAnalyzer] forwardPacketToClient " + new String(packet.getData(), StandardCharsets.UTF_8));
         packet.setAddress(address);
         packet.setPort(port);
         socketRepository.sendPacket(packet);
@@ -65,7 +66,7 @@ public class PeerMessageAnalyzer extends Thread {
 
     private static String getFirstWord(final String message) {
         StringBuilder firstWord = new StringBuilder();
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < Math.min(message.length(), 20); i++) {
             if (message.charAt(i) == ' ') {
                 break;
             }
