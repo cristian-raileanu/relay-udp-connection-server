@@ -1,1 +1,0 @@
-javac -d ./target/ ./src/*.java
