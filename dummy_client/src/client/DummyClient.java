@@ -24,7 +24,7 @@ public class DummyClient {
             } else if (id == 3) {
                 bombardPeer(address, serverPort, 2);
             } else if (id == 4) {
-                respondPeer();
+                respondPeer(address, serverPort);
             }
         } catch (Exception ex) {
             System.out.println("Error: " + ex.getMessage());
@@ -40,33 +40,39 @@ public class DummyClient {
     }
 
     private void messagePeer(final InetAddress serverAddress, final int port, final InetAddress peerAddress) throws IOException {
-        System.out.println("send message to peer2 " + peerAddress.getHostAddress());
-        sendMessage( messagePrefixing(peerAddress) + "dummy_message", serverAddress, port);
+        System.out.println("send message to peer " + peerAddress.getHostAddress());
+
+        InetAddress myIp = retrieveRealIp(serverAddress, port);
+        sendMessage(prefixMessage(peerAddress, myIp, "dummy_message"), serverAddress, port);
 
         final String response = receiveMessage();
         System.out.println(response);
     }
 
     private void bombardPeer(final InetAddress address, final int port, final int replicas) throws IOException, InterruptedException {
+        InetAddress myIp = retrieveRealIp(address, port);
         for (int i=0; i<replicas; i++) {
             System.out.println("BOMBARD");
-            sendMessage("BOMBARD", address, port);
+            sendMessage(prefixMessage(address, myIp, "BOMBARD"), address, port);
 
             TimeUnit.SECONDS.sleep(2);
         }
     }
 
-    private void respondPeer() throws IOException {
+    private void respondPeer(InetAddress serverAddress, int serverPort) throws IOException {
+        InetAddress myIp = retrieveRealIp(serverAddress, serverPort);
+
         while (true) {
+            pingServer(serverAddress, serverPort);
+
             final DatagramPacket response = receiveDataGram();
             String message = datagramMessage(response);
             System.out.println("received message from peer: " + message);
 
             String sender = getSecondWord(message);
             InetAddress senderAddress = InetAddress.getByName(sender);
-
-            sendMessage( messagePrefixing(senderAddress) +
-                    " ACK for <" + message + ">", response.getAddress(), response.getPort());
+            sendMessage(prefixMessage(senderAddress, myIp, "ACK for <" + message + ">"), response.getAddress(),
+                    response.getPort());
         }
     }
 
@@ -88,12 +94,19 @@ public class DummyClient {
         return response;
     }
 
+    private InetAddress retrieveRealIp(InetAddress serverAddress, int serverPort) throws IOException {
+        sendMessage("IP", serverAddress, serverPort);
+        String message = receiveMessage();
+        String address = getSecondWord(message);
+        return InetAddress.getByName(address);
+    }
+
     private static String datagramMessage(final DatagramPacket response) {
         return new String(response.getData(), 0, response.getLength());
     }
 
-    private static String messagePrefixing(InetAddress destination) throws UnknownHostException {
-        return destination.getHostAddress() + " " + InetAddress.getLocalHost().getHostAddress();
+    private static String prefixMessage(InetAddress destination, InetAddress realSenderIp, String message) throws UnknownHostException {
+        return destination.getHostAddress() + " " + realSenderIp.getHostAddress() + " " + message;
     }
 
     private static String getSecondWord(final String message) {

@@ -44,7 +44,10 @@ public class PeerMessageAnalyzer extends Thread {
         try {
             if (firstWord.equals("PING")) {
                 forwardPacketToClient(packet, clientAddress, clientPort);
-            } else {
+            } else if (firstWord.equals("IP")) {
+                packet.setData(("IP" + packet.getAddress().getHostAddress()).getBytes(StandardCharsets.UTF_8));
+                forwardPacketToClient(packet, clientAddress, clientPort);
+            }else {
                 InetAddress destination = InetAddress.getByName(firstWord);
                 forwardPacketToClient(packet, destination, clientPort);
             }
