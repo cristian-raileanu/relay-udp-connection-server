@@ -6,6 +6,8 @@ import java.util.concurrent.TimeUnit;
 
 public class DummyClient {
     private static final int BUFFER_SIZE = 8192;
+    private static final int TIMEOUT_MS = 5;
+
     private final DatagramSocket socket;
 
     public DummyClient(int clientPort) throws SocketException {
@@ -63,16 +65,19 @@ public class DummyClient {
         InetAddress myIp = retrieveRealIp(serverAddress, serverPort);
 
         while (true) {
-            pingServer(serverAddress, serverPort);
+            final DatagramPacket response = receiveDataGramNonBlocking();
+            if (response != null) {
+                String message = getDatagramMessage(response);
+                System.out.println("received message from peer: " + message);
 
-            final DatagramPacket response = receiveDataGram();
-            String message = datagramMessage(response);
-            System.out.println("received message from peer: " + message);
+                String sender = getSecondWord(message);
+                InetAddress senderAddress = InetAddress.getByName(sender);
+                sendMessage(prefixMessage(senderAddress, myIp, "ACK for <" + message + ">"), response.getAddress(),
+                        response.getPort());
+            } else {
+                sendMessage("DROP ", serverAddress, serverPort);
+            }
 
-            String sender = getSecondWord(message);
-            InetAddress senderAddress = InetAddress.getByName(sender);
-            sendMessage(prefixMessage(senderAddress, myIp, "ACK for <" + message + ">"), response.getAddress(),
-                    response.getPort());
         }
     }
 
@@ -83,14 +88,25 @@ public class DummyClient {
     }
 
     private String receiveMessage() throws IOException {
-        final DatagramPacket response = new DatagramPacket(new byte[BUFFER_SIZE], BUFFER_SIZE);
-        socket.receive(response);
-        return datagramMessage(response);
+        final DatagramPacket response = receiveDataGram();
+        return getDatagramMessage(response);
     }
 
     private DatagramPacket receiveDataGram() throws IOException {
         final DatagramPacket response = new DatagramPacket(new byte[BUFFER_SIZE], BUFFER_SIZE);
+        socket.setSoTimeout(0);
         socket.receive(response);
+        return response;
+    }
+
+    private DatagramPacket receiveDataGramNonBlocking() throws IOException {
+        final DatagramPacket response = new DatagramPacket(new byte[BUFFER_SIZE], BUFFER_SIZE);
+        socket.setSoTimeout(TIMEOUT_MS);
+        try {
+            socket.receive(response);
+        } catch (SocketTimeoutException e) {
+            return null;
+        }
         return response;
     }
 
@@ -101,11 +117,11 @@ public class DummyClient {
         return InetAddress.getByName(address);
     }
 
-    private static String datagramMessage(final DatagramPacket response) {
+    private static String getDatagramMessage(final DatagramPacket response) {
         return new String(response.getData(), 0, response.getLength());
     }
 
-    private static String prefixMessage(InetAddress destination, InetAddress realSenderIp, String message) throws UnknownHostException {
+    private static String prefixMessage(InetAddress destination, InetAddress realSenderIp, String message) {
         return destination.getHostAddress() + " " + realSenderIp.getHostAddress() + " " + message;
     }
 

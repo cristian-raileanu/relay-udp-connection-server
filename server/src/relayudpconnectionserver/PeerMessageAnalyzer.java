@@ -48,7 +48,7 @@ public class PeerMessageAnalyzer extends Thread {
                 String senderAddress = clientAddress.getHostAddress();
                 packet.setData(("IP " + senderAddress).getBytes(StandardCharsets.UTF_8));
                 forwardPacketToClient(packet, clientAddress, clientPort);
-            }else {
+            } else if (!firstWord.equals("DROP")) {
                 InetAddress destination = InetAddress.getByName(firstWord);
                 forwardPacketToClient(packet, destination, clientPort);
             }
