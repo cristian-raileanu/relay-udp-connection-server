@@ -7,7 +7,7 @@ public class Logger {
         ERROR
     }
 
-    private static Priority priority = Priority.INFO;
+    private static Priority priority = Priority.WARN;
 
     public static void setPriority(final String priority) {
         for (Priority prio : Priority.values())
@@ -18,17 +18,21 @@ public class Logger {
         Logger.error("[Logger] wrong logger priority value: "+priority);
     }
 
-    public static void log(final Priority priority, final String message) {
-        if (priority.ordinal() >= Logger.priority.ordinal())
-            System.out.println(message);
-    }
-
     public static void error(final String message) {
         System.out.println(message);
     }
 
     public static void info(final String message) {
         if (Logger.priority == Priority.INFO)
+            System.out.println(message);
+    }
+
+    public static void warn(final String message) {
+        log(Priority.WARN, message);
+    }
+
+    private static void log(final Priority priority, final String message) {
+        if (priority.ordinal() >= Logger.priority.ordinal())
             System.out.println(message);
     }
 }

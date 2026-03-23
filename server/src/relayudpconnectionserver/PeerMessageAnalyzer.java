@@ -58,7 +58,8 @@ public class PeerMessageAnalyzer extends Thread {
     }
 
     private void forwardPacketToClient(final DatagramPacket packet, InetAddress address, int port) {
-        Logger.info("[PeerMessageAnalyzer] forwardPacketToClient " + new String(packet.getData(), StandardCharsets.UTF_8));
+        Logger.info("[PeerMessageAnalyzer] forwardPacketToClient " + new String(packet.getData(), StandardCharsets.UTF_8)
+                + " to " + address.getHostAddress() + " port " + port);
         packet.setAddress(address);
         packet.setPort(port);
         socketRepository.sendPacket(packet);
