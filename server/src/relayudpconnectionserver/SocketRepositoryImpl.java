@@ -3,6 +3,7 @@ package relayudpconnectionserver;
 import common.Logger;
 
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.DatagramPacket;
 import java.io.IOException;
@@ -30,7 +31,18 @@ public class SocketRepositoryImpl implements SocketRepository {
         try {
             socket.receive(packet);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            Logger.error(e.getMessage());
+        }
+    }
+
+    @Override
+    public void sendMessage(final String message, final InetAddress address, final int port) {
+        final byte[] buffer = message.getBytes();
+        try {
+            DatagramPacket request = new DatagramPacket(buffer, buffer.length, address, port);
+            socket.send(request);
+        } catch (Exception e) {
+            Logger.error(e.getMessage());
         }
     }
 }

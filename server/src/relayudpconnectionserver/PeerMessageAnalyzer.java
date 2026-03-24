@@ -50,11 +50,16 @@ public class PeerMessageAnalyzer extends Thread {
                 forwardPacketToClient(packet, clientAddress, clientPort);
             } else if (!firstWord.equals("DROP")) {
                 InetAddress destination = InetAddress.getByName(firstWord);
-                forwardPacketToClient(packet, destination, clientPort);
+                forwardMessageToClient(message, destination, clientPort);
             }
         } catch (UnknownHostException e) {
             Logger.error("[PeerMessageAnalyzer] Error: " + e.getMessage());
         }
+    }
+
+    private void forwardMessageToClient(final String message, InetAddress address, int port) {
+        Logger.info("[PeerMessageAnalyzer] forwardMessageToClient " + message + " to " + address.getHostAddress() + " port " + port);
+        socketRepository.sendMessage(message, address, port);
     }
 
     private void forwardPacketToClient(final DatagramPacket packet, InetAddress address, int port) {

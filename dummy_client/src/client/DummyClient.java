@@ -6,7 +6,7 @@ import java.util.concurrent.TimeUnit;
 
 public class DummyClient {
     private static final int BUFFER_SIZE = 8192;
-    private static final int TIMEOUT_MS = 500;
+    private static final int TIMEOUT_MS = 5000;
 
     private final DatagramSocket socket;
 
