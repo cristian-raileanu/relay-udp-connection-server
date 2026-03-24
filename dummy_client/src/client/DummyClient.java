@@ -71,6 +71,7 @@ public class DummyClient {
                 System.out.println("received message from peer: " + message);
 
                 String sender = getSecondWord(message);
+                System.out.println("extracted host address from message: " + sender);
                 InetAddress senderAddress = InetAddress.getByName(sender);
                 sendMessage(prefixMessage(senderAddress, myIp, "ACK for <" + message + ">"), response.getAddress(),
                         response.getPort());
@@ -130,17 +131,17 @@ public class DummyClient {
         while (message.charAt(i) == ' ') {
             i++;
         }
-        for (; i < 20; i++) {
-            if (message.charAt(i) == ' ') {
-                break;
-            }
+        while (message.charAt(i) != ' ') {
+            i++;
         }
         while (message.charAt(i) == ' ') {
             i++;
         }
+
         StringBuilder secondWord = new StringBuilder();
-        for (; i < message.length(); i++) {
+        while (i < message.length() && message.charAt(i) != ' ') {
             secondWord.append(message.charAt(i));
+            i++;
         }
 
         return secondWord.toString();
