@@ -23,7 +23,7 @@ public class RelayServer extends Thread implements ApplicationContext {
                 final DatagramPacket request = new DatagramPacket(buffer, buffer.length);
                 socketRepository.receive(request);
                 Logger.info("\n[RelayServer] message received! \"" + new String(request.getData(), StandardCharsets.UTF_8)
-                        + " from " + request.getAddress().getHostAddress() + "\"");
+                        + " from " + request.getAddress().getHostAddress() + "\" port " + request.getPort());
                 final PeerMessageAnalyzer session = new PeerMessageAnalyzer(this, request);
                 session.start();
             } catch (Exception e) {

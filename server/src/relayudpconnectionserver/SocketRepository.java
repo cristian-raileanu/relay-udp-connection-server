@@ -8,5 +8,5 @@ public interface SocketRepository {
 
     void receive(DatagramPacket packet);
 
-    void sendMessage(String message, InetAddress address, int port);
+    void sendMessage(String message, InetAddress address);
 }

@@ -42,9 +42,9 @@ public class DummyClient {
     }
 
     private void messagePeer(final InetAddress serverAddress, final int port, final InetAddress peerAddress) throws IOException {
-        System.out.println("send message to peer " + peerAddress.getHostAddress());
-
         InetAddress myIp = retrieveRealIp(serverAddress, port);
+
+        System.out.println("send message to peer " + peerAddress.getHostAddress());
         sendMessage(prefixMessage(peerAddress, myIp, "dummy_message"), serverAddress, port);
 
         final String response = receiveMessage();

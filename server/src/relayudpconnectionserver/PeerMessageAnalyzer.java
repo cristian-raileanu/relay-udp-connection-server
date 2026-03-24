@@ -32,7 +32,6 @@ public class PeerMessageAnalyzer extends Thread {
             return;
         }
         final InetAddress clientAddress = packet.getAddress();
-        final int clientPort = packet.getPort();
         final String message = new String(packet.getData(), StandardCharsets.UTF_8);
 
         final String firstWord = getFirstWord(message);
@@ -43,30 +42,29 @@ public class PeerMessageAnalyzer extends Thread {
 
         try {
             if (firstWord.equals("PING")) {
-                forwardPacketToClient(packet, clientAddress, clientPort);
+                forwardPacketToClient(packet, clientAddress);
             } else if (firstWord.equals("IP")) {
                 String senderAddress = clientAddress.getHostAddress();
                 packet.setData(("IP " + senderAddress).getBytes(StandardCharsets.UTF_8));
-                forwardPacketToClient(packet, clientAddress, clientPort);
+                forwardPacketToClient(packet, clientAddress);
             } else if (!firstWord.equals("DROP")) {
                 InetAddress destination = InetAddress.getByName(firstWord);
-                forwardMessageToClient(message, destination, clientPort);
+                forwardMessageToClient(message, destination);
             }
         } catch (UnknownHostException e) {
             Logger.error("[PeerMessageAnalyzer] Error: " + e.getMessage());
         }
     }
 
-    private void forwardMessageToClient(final String message, InetAddress address, int port) {
-        Logger.info("[PeerMessageAnalyzer] forwardMessageToClient " + message + " to " + address.getHostAddress() + " port " + port);
-        socketRepository.sendMessage(message, address, port);
+    private void forwardMessageToClient(final String message, InetAddress address) {
+        Logger.info("[PeerMessageAnalyzer] forwardMessageToClient " + message + " to " + address.getHostAddress());
+        socketRepository.sendMessage(message, address);
     }
 
-    private void forwardPacketToClient(final DatagramPacket packet, InetAddress address, int port) {
+    private void forwardPacketToClient(final DatagramPacket packet, InetAddress address) {
         Logger.info("[PeerMessageAnalyzer] forwardPacketToClient " + new String(packet.getData(), StandardCharsets.UTF_8)
-                + " to " + address.getHostAddress() + " port " + port);
+                + " to " + address.getHostAddress() + " port ");
         packet.setAddress(address);
-        packet.setPort(port);
         socketRepository.sendPacket(packet);
     }
 
